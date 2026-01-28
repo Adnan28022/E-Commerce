@@ -1,7 +1,7 @@
 {
     "builds": [
         {
-            "src": "index.js",
+            "src": "server.js",
             "use": "@vercel/node"
         },
         {
@@ -9,10 +9,18 @@
             "use": "@vercel/static"
         }
     ],
-    "rewrites": [
+    "routes": [
         {
-            "source": "/(.*)",
-            "destination": "index.html"
+            "src": "/api/(.*)",
+            "dest": "server.js"
+        },
+        {
+            "src": "/uploads/(.*)",
+            "dest": "/uploads/$1"
+        },
+        {
+            "src": "/(.*)",
+            "dest": "/dist/index.html"
         }
     ]
 }
