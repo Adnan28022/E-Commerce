@@ -1,4 +1,5 @@
 {
+    "version": 3,
     "builds": [
         {
             "src": "backend/server.js",
@@ -15,12 +16,8 @@
             "dest": "backend/server.js"
         },
         {
-            "src": "/uploads/(.*)",
-            "dest": "/backend/uploads/$1"
-        },
-        {
             "src": "/(.*)",
-            "dest": "/frontend/dist/index.html"
+            "dest": "/frontend/dist/$1"
         }
     ]
 }
