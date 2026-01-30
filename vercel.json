@@ -1,27 +1,14 @@
 {
     "version": 2,
-    "builds": [
-        {
-            "src": "backend/server.js",
-            "use": "@vercel/node"
-        },
-        {
-            "src": "backend/dist/**",
-            "use": "@vercel/static"
+    "functions": {
+        "backend/server.js": {
+            "runtime": "nodejs18.x"
         }
-    ],
+    },
     "routes": [
         {
             "src": "/api/(.*)",
             "dest": "/backend/server.js"
-        },
-        {
-            "src": "/uploads/(.*)",
-            "dest": "/backend/uploads/$1"
-        },
-        {
-            "src": "/(.*)",
-            "dest": "/backend/dist/index.html"
         }
     ]
 }
