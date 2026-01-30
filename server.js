@@ -14,15 +14,23 @@ const connectDB = require("./config/db");
 const app = express();
 
 /* ===============================
-   ENSURE UPLOAD DIRECTORIES
+   DB CONNECT (SAFE FOR VERCEL)
 ================================ */
-const uploadDir = path.join(__dirname, "uploads");
+connectDB().catch(err => {
+    console.error("❌ DB Connection Failed:", err.message);
+});
+
+/* ===============================
+   UPLOAD DIRS (LOCAL DEV SAFE)
+   ⚠️ Vercel pe permanent nahi
+================================ */
+const uploadDir = path.join("/tmp", "uploads");
 const storeUploadDir = path.join(uploadDir, "stores");
 const productUploadDir = path.join(uploadDir, "products");
 
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
-if (!fs.existsSync(storeUploadDir)) fs.mkdirSync(storeUploadDir, { recursive: true });
-if (!fs.existsSync(productUploadDir)) fs.mkdirSync(productUploadDir, { recursive: true });
+[uploadDir, storeUploadDir, productUploadDir].forEach(dir => {
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+});
 
 /* ===============================
    MIDDLEWARE
@@ -31,7 +39,6 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve uploaded images
 app.use("/uploads", express.static(uploadDir));
 
 /* ===============================
@@ -43,15 +50,15 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);
 
 /* ===============================
-   SERVE FRONTEND (React/Vue/Any)
+   FRONTEND (OPTIONAL)
 ================================ */
 const frontendPath = path.join(__dirname, "dist");
-app.use(express.static(frontendPath));
-
-// Handle SPA routing: for any route not starting with /api, serve index.html
-app.get(/^\/(?!api).*/, (req, res) => {
-    res.sendFile(path.join(frontendPath, "index.html"));
-});
+if (fs.existsSync(frontendPath)) {
+    app.use(express.static(frontendPath));
+    app.get(/^\/(?!api).*/, (req, res) => {
+        res.sendFile(path.join(frontendPath, "index.html"));
+    });
+}
 
 /* ===============================
    ERROR HANDLER
@@ -65,17 +72,6 @@ app.use((err, req, res, next) => {
 });
 
 /* ===============================
-   START SERVER
+   EXPORT FOR VERCEL
 ================================ */
-const PORT = process.env.PORT || 5000;
-
-connectDB()
-    .then(() => {
-        app.listen(PORT, () =>
-            console.log(`🚀 Server running on port ${PORT}`)
-        );
-    })
-    .catch((err) => {
-        console.error("❌ DB Connection Failed:", err);
-        process.exit(1);
-    });
+module.exports = app;
